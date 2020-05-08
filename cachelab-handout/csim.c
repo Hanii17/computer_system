@@ -113,14 +113,14 @@ void accessData(mem_addr_t addr)
     unsigned long long int eviction_lru = 0;
     unsigned int eviction_line = 0;
     mem_addr_t set_index = (addr >> b) & set_index_mask;//得到组编号
-    mem_addr_t tag = addr >> (s+b);//放在一个cache行里的tag
+    mem_addr_t tag = addr >> (s+b);//提取tag
 
 
     cache_set_t cache_set = cache[set_index];//提取出那一组
 	int hit = 0;//是否命中
-	for(i=0;i<E;i++)//E:相联度，即每组内有几块
+	for(i=0;i<E;i++)
 	{
-		if(cache_set[i].tag==tag && cache_set[i].valid==1)//在cache内
+		if(cache_set[i].tag==tag && cache_set[i].valid==1)//命中
 		{
 			
 			hit_count++;
@@ -130,7 +130,7 @@ void accessData(mem_addr_t addr)
 		}
 		else
 		{
-			if(cache_set[i].valid==1)cache_set[i].lru++;
+			if(cache_set[i].valid==1)cache_set[i].lru++;//其余行lru+1
 			
 	}}
 		if(hit==0)//未命中
@@ -138,16 +138,16 @@ void accessData(mem_addr_t addr)
 			printf("miss ");
 			int j;
 			miss_count++;
-			for(j=0;j<E;j++)//决定需要放入cache的地方
+			for(j=0;j<E;j++)//寻找需要替换的行
 			{
-				if(cache_set[j].valid==0)//说明为空闲位置
+				if(cache_set[j].valid==0)//有空闲位置
 				{
 					eviction_line=j;
 					break;
 				}
 				else
 				{
-					if(cache_set[j].lru>eviction_lru)
+					if(cache_set[j].lru>eviction_lru)//将lru最大的行替换
 					{
 						eviction_lru=cache_set[j].lru;
 						eviction_line=j;
@@ -156,7 +156,7 @@ void accessData(mem_addr_t addr)
 			}
 		
         
-		 if(!(cache_set[eviction_line].valid==0))//有淘汰
+		 if(cache_set[eviction_line].valid!=0)//有淘汰
 		 {
 			 printf("eviction ");
 			 eviction_count++;
@@ -164,9 +164,6 @@ void accessData(mem_addr_t addr)
 		 cache_set[eviction_line].valid =1 ;
 		 cache_set[eviction_line].lru=0;
 		 cache_set[eviction_line].tag=tag;
-
-
-
 }
 }
 
